@@ -9,6 +9,10 @@ import time
 # Read API key from file
 with open("api_key.txt", "r") as f:
     openai.api_key = f.read().strip()
+
+# Print the API key to verify it's being read correctly
+print(f"API Key: {openai.api_key}")
+
 # Initialize the text to speech engine
 engine = pyttsx3.init()
 
@@ -25,20 +29,23 @@ def transcribe_audio_to_text(filename):
     with sr.AudioFile(filename) as source:
         audio = recognizer.record(source)
     try:
-        return recognizer.recognize_google(audio)
+        return recognizer.recognize_google(audio, language='zh-CN')
     except:
         print("No question detected.")
 
 def generate_response(prompt):
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=prompt,
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": prompt}
+        ],
         max_tokens=4000,
         n=1,
         stop=None,
         temperature=0.5,
     )
-    return response["choices"][0]["text"]
+    return response["choices"][0]["message"]["content"]
 
 def speak_text(text):
     engine.say(text)
@@ -46,7 +53,7 @@ def speak_text(text):
 
 def main():
     # Speak "Say your question" and start listening immediately after
-    speak_text("Say your question")
+    speak_text("請說出您的問題")
     
     with sr.Microphone() as source:
         recognizer = sr.Recognizer()
@@ -60,11 +67,11 @@ def main():
     # Transcribe audio to text
     text = transcribe_audio_to_text(filename)
     if text:
-        print(f"You said: {text}")
+        print(f"您說了: {text}")
 
         # Generate the response
         response = generate_response(text)
-        print(f"ChatGPT says: {response}")
+        print(f"ChatGPT 回應: {response}")
 
         # Read response using TTS
         speak_text(response)
