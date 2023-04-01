@@ -5,6 +5,8 @@ import scipy.io.wavfile
 import speech_recognition as sr
 import pyttsx3
 import time
+import threading
+import sys
 
 # Read API key from file
 with open("api_key.txt", "r") as f:
@@ -51,7 +53,18 @@ def speak_text(text):
     engine.say(text)
     engine.runAndWait()
 
+def check_exit():
+    while True:
+        key = input()
+        if key.lower() == 'q':
+            sys.exit()
+
 def main():
+    # Run the check_exit function in a separate thread
+    exit_thread = threading.Thread(target=check_exit)
+    exit_thread.daemon = True
+    exit_thread.start()
+
     # Speak "Say your question" and start listening immediately after
     speak_text("請說出您的問題")
     
