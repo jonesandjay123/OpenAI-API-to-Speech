@@ -49,6 +49,12 @@ def generate_response(prompt):
     )
     return response["choices"][0]["message"]["content"]
 
+def on_end(utterance, completed):
+    if not completed:
+        engine.stop()
+
+engine.connect('finished-utterance', on_end)
+
 def speak_text(text):
     engine.say(text)
     engine.runAndWait()
@@ -57,6 +63,7 @@ def check_exit():
     while True:
         key = input()
         if key.lower() == 'q':
+            engine.stop()
             sys.exit()
 
 def main():
